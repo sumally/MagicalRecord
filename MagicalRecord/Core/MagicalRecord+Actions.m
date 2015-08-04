@@ -36,10 +36,19 @@
 
 #pragma mark - Synchronous saving
 
-+ (void) saveWithBlockAndWait:(void(^)(NSManagedObjectContext *localContext))block;
++ (BOOL) saveWithBlockAndWait:(void(^)(NSManagedObjectContext *localContext))block;
+{
+    return [self saveWithBlockAndWait:block error:nil];
+}
+
++ (BOOL) saveWithBlockAndWait:(void(^)(NSManagedObjectContext *localContext))block error:(NSError **)error;
 {
     NSManagedObjectContext *savingContext  = [NSManagedObjectContext MR_rootSavingContext];
     NSManagedObjectContext *localContext = [NSManagedObjectContext MR_contextWithParent:savingContext];
+
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+
+    __block BOOL contextDidSave;
 
     [localContext performBlockAndWait:^{
         [localContext MR_setWorkingName:NSStringFromSelector(_cmd)];
@@ -48,8 +57,16 @@
             block(localContext);
         }
 
-        [localContext MR_saveWithOptions:MRSaveParentContexts|MRSaveSynchronously completion:nil];
+        [localContext MR_saveWithOptions:MRSaveParentContexts | MRSaveSynchronously completion:^(BOOL localContextDidSave, NSError *localError) {
+            contextDidSave = localContextDidSave;
+            if (error != NULL) {
+                *error = localError;
+            }
+            dispatch_semaphore_signal(semaphore);
+        }];
     }];
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    return contextDidSave;
 }
 
 @end
