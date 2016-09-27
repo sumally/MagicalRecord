@@ -19,3 +19,8 @@ profile
 
 DerivedData
 Carthage/Build
+
+*.gcno
+*.gcda
+
+MagicalRecord.framework.zip
