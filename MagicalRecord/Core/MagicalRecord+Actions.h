@@ -21,7 +21,7 @@
 /* For saving on the current thread as the caller, only with a separate context. Useful when you're managing your own threads/queues and need a serial call to create or change data
  */
 + (BOOL) saveWithBlockAndWait:(void (^ __MR_nonnull)(NSManagedObjectContext * __MR_nonnull localContext))block;
-+ (BOOL) saveWithBlockAndWait:(void (^ __MR_nonnull)(NSManagedObjectContext * __MR_nonnull localContext))block error:(NSError **)error NS_SWIFT_NOTHROW;
++ (BOOL) saveWithBlockAndWait:(void (^ __MR_nonnull)(NSManagedObjectContext * __MR_nonnull localContext))block error:(NSError * __MR_nullable * __MR_nullable)error NS_SWIFT_NOTHROW;
 
 @end
 
