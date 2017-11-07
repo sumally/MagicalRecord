@@ -49,6 +49,7 @@
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
 
     __block BOOL contextDidSave;
+    __block NSError *tmpError = nil;
 
     [localContext performBlockAndWait:^{
         [localContext MR_setWorkingName:NSStringFromSelector(_cmd)];
@@ -59,13 +60,14 @@
 
         [localContext MR_saveWithOptions:MRSaveParentContexts | MRSaveSynchronously completion:^(BOOL localContextDidSave, NSError *localError) {
             contextDidSave = localContextDidSave;
-            if (error != NULL) {
-                *error = localError;
-            }
+            tmpError = localError;
             dispatch_semaphore_signal(semaphore);
         }];
     }];
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    if (error != NULL) {
+        *error = tmpError;
+    }
     return contextDidSave;
 }
 
